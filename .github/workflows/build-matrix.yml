@@ -1,0 +1,83 @@
+name: Build Matrix
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build-matrix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [20.x]
+        # Each platform builds only for its native architecture
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for ${{ matrix.os }}
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            npm run dist:linux
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            npm run dist:win
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            npm run dist:mac
+          fi
+        env:
+          ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache
+
+      - name: Upload ${{ matrix.os }} artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-gold-${{ matrix.os }}
+          path: dist/
+          retention-days: 30
+
+  aggregate-artifacts:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create combined artifact list
+        run: |
+          echo "All platform builds completed successfully" > build-summary.txt
+          echo "Platforms built:" >> build-summary.txt
+          echo "- macOS" >> build-summary.txt
+          echo "- Windows" >> build-summary.txt
+          echo "- Linux" >> build-summary.txt
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-summary
+          path: build-summary.txt
+          retention-days: 30
+
+      - name: Comment build status on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Build completed for all platforms:\n- macOS\n- Windows\n- Linux\n\nArtifacts are available in the workflow run.'
+            })

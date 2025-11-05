@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*" # Trigger on version tags like v1.0.0
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "20.x"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application for all platforms
+        run: npm run dist
+        env:
+          ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Automated release from GitHub Actions
+            - Built for macOS, Windows, and Linux
+            - Includes all platform-specific installers
+          draft: false
+          prerelease: false
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold-darwin-x64/electron-gold.zip
+          asset_name: electron-gold-mac-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS ARM64 artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold-darwin-arm64/electron-gold.zip
+          asset_name: electron-gold-mac-arm64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold-win32-x64/setup.exe
+          asset_name: electron-gold-windows-installer.exe
+          asset_content_type: application/vnd.microsoft.installation-package
+
+      - name: Upload Windows ZIP artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold-win32-x64/electron-gold.zip
+          asset_name: electron-gold-windows.zip
+          asset_content_type: application/zip
+
+      - name: Upload Linux AppImage artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold-x64.AppImage
+          asset_name: electron-gold-linux.AppImage
+          asset_content_type: application/vnd.appimage
+
+      - name: Upload Linux DEB artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/electron-gold.deb
+          asset_name: electron-gold-linux.deb
+          asset_content_type: application/vnd.debian

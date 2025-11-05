@@ -9,7 +9,9 @@
     "dist": "electron-builder",
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "dist:linux-appimage": "electron-builder --linux appimage",
+    "test-build": "npm run dist:linux-appimage"
   },
   "keywords": [
     "electron",
@@ -17,7 +19,10 @@
     "gold",
     "macos"
   ],
-  "author": "",
+  "author": {
+    "name": "Bobby",
+    "email": "zhangluuka@gmail.com"
+  },
   "license": "ISC",
   "devDependencies": {
     "electron": "^39.0.0",
