@@ -29,16 +29,22 @@ jobs:
 
       - name: Build for ${{ matrix.os }}
         run: |
+          echo "Building for platform: ${{ matrix.os }}"
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            npm run dist:linux
+            echo "Running Linux AppImage build..."
+            npm run dist:linux-appimage
           elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            echo "Running Windows build..."
             npm run dist:win
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            echo "Running macOS build..."
             npm run dist:mac
           fi
+          echo "Build completed for ${{ matrix.os }}"
         shell: bash
         env:
           ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload ${{ matrix.os }} artifacts
         uses: actions/upload-artifact@v4
