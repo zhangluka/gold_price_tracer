@@ -1,6 +1,6 @@
 {
   "name": "electron-gold",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "macOS托盘黄金价格实时查看工具",
   "main": "src/main.js",
   "scripts": {
