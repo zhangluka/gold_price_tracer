@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Build application for all platforms
-        run: npm run dist
+        run: GH_TOKEN= npm run dist
         env:
           ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache
 

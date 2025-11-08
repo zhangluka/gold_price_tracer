@@ -73,6 +73,7 @@
       "category": "Finance",
       "icon": "build/icon.png"
     },
+    "publish": [],
     "dmg": {
       "contents": [
         {
