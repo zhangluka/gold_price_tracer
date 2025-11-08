@@ -17,3 +17,33 @@ Performance Optimization
 Other Rules need to follow:
 
 Don't be lazy, write all the code to implement features I ask for.
+
+# Git 元数据忽略配置
+
+IGNORE_GIT_METADATA: |
+
+- 忽略所有 Git 仓库元数据
+- 不要统计或使用仓库名称
+- 不要统计或使用分支名称
+- 不要统计或使用提交历史
+- 不要统计或使用 Git 配置信息
+
+FOCUS_ON_CODE: |
+
+- 只关注源代码文件本身
+- 忽略版本控制系统信息
+- 专注于业务逻辑和功能实现
+
+GIT_IGNORE_PATTERNS: |
+
+- **/.git/**
+- **/.gitignore**
+- **/.gitmodules**
+- **/.gitattributes**
+- **/HEAD**
+- **/ORIG_HEAD**
+- **/packed-refs**
+- **/refs/**
+- **/logs/**
+- **/info/**
+- **/objects/**

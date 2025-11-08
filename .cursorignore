@@ -1,1 +1,27 @@
 src/
+
+# Git 相关文件
+.git/
+.gitignore
+.gitmodules
+.gitattributes
+.git-rewrite/
+
+# Git 内部文件
+**/.git/HEAD
+**/.git/ORIG_HEAD
+**/.git/packed-refs
+**/.git/refs/
+**/.git/logs/
+**/.git/info/
+**/.git/objects/
+**/.git/hooks/
+
+# 分支和标签引用
+**/.git/refs/heads/
+**/.git/refs/tags/
+**/.git/refs/remotes/
+
+# Git 配置
+**/.git/config
+**/.git/description
