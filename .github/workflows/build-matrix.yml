@@ -41,6 +41,8 @@ jobs:
             npm run dist:mac
           fi
           echo "Build completed for ${{ matrix.os }}"
+          echo "Build size check:"
+          node -e "const fs = require('fs'); const path = require('path'); const size = (dir) => { let s = 0; fs.readdirSync(dir).forEach(f => { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) s += size(p); else s += fs.statSync(p).size; }); return s; }; console.log('Build size: ' + (size('dist') / 1024 / 1024).toFixed(2) + ' MB');"
         shell: bash
         env:
           ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder-cache

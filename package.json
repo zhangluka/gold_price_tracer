@@ -11,7 +11,10 @@
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
     "dist:linux-appimage": "electron-builder --linux appimage",
-    "test-build": "npm run dist:linux-appimage"
+    "test-build": "npm run dist:linux-appimage",
+    "build:optimized": "node build-optimized.js",
+    "build:clean": "rm -rf dist build",
+    "build:size-check": "node -e \"const fs = require('fs'); const path = require('path'); const size = (dir) => { let s = 0; fs.readdirSync(dir).forEach(f => { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) s += size(p); else s += fs.statSync(p).size; }); return s; }; console.log('Build size: ' + (size('dist') / 1024 / 1024).toFixed(2) + ' MB');\""
   },
   "keywords": [
     "electron",
@@ -38,22 +41,21 @@
       "src/**/*",
       "package.json"
     ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/@electron/remote/**"
+    ],
+    "compression": "maximum",
     "mac": {
       "category": "public.app-category.finance",
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": "arm64"
         },
         {
           "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": "arm64"
         }
       ],
       "icon": "build/icon.icns"
