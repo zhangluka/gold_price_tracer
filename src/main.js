@@ -3,6 +3,7 @@
  */
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const isDev = require('electron-is-dev');
 const Logger = require('./common/logger');
 const { LAUNCHER_WINDOW } = require('./common/constants');
 const { getAllApps, startApp, stopApp, stopAllApps } = require('./apps');
@@ -32,13 +33,15 @@ function createLauncherWindow() {
     backgroundColor: '#667eea',
   });
 
-  // 加载启动器界面
-  launcherWindow.loadFile(path.join(__dirname, 'ui/launcher/index.html'));
-
-  // 开发环境下打开开发者工具
-  // if (process.env.NODE_ENV === 'development') {
-  //   launcherWindow.webContents.openDevTools();
-  // }
+  // 开发模式：加载 Vite dev server
+  // 生产模式：加载构建后的文件
+  if (isDev) {
+    launcherWindow.loadURL('http://localhost:5173');
+    // 开发环境下打开开发者工具
+    launcherWindow.webContents.openDevTools();
+  } else {
+    launcherWindow.loadFile(path.join(__dirname, '../dist-renderer/index.html'));
+  }
 
   launcherWindow.on('closed', () => {
     launcherWindow = null;
@@ -87,12 +90,6 @@ function setupIpcHandlers() {
  * 初始化应用
  */
 function initApp() {
-  // 隐藏 Dock 图标（macOS）
-  // 如果想保留启动器窗口的 Dock 图标，可以注释掉这行
-  // if (process.platform === 'darwin' && app.dock) {
-  //   app.dock.hide();
-  // }
-
   // 确保单例
   const gotLock = app.requestSingleInstanceLock();
   if (!gotLock) {

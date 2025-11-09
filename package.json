@@ -3,18 +3,22 @@
   "version": "1.0.0",
   "description": "桌面应用合集 - 集成多个实用工具的桌面应用",
   "main": "src/main.js",
+  "type": "commonjs",
   "scripts": {
-    "start": "electron .",
-    "dev": "NODE_ENV=development electron .",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux",
-    "dist:linux-appimage": "electron-builder --linux appimage",
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "start": "npm run dev",
+    "build:renderer": "vite build",
+    "build:electron": "electron-builder",
+    "build": "npm run build:renderer && npm run build:electron",
+    "pack": "npm run build:renderer && electron-builder --dir",
+    "dist": "npm run build:renderer && electron-builder",
+    "dist:mac": "npm run build:renderer && electron-builder --mac",
+    "dist:win": "npm run build:renderer && electron-builder --win",
+    "dist:linux": "npm run build:renderer && electron-builder --linux",
+    "dist:linux-appimage": "npm run build:renderer && electron-builder --linux appimage",
     "test-build": "npm run dist:linux-appimage",
     "build:optimized": "node build-optimized.js",
-    "build:clean": "rm -rf dist build",
+    "build:clean": "rm -rf dist dist-renderer build",
     "build:size-check": "node -e \"const fs = require('fs'); const path = require('path'); const size = (dir) => { let s = 0; fs.readdirSync(dir).forEach(f => { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) s += size(p); else s += fs.statSync(p).size; }); return s; }; console.log('Build size: ' + (size('dist') / 1024 / 1024).toFixed(2) + ' MB');\""
   },
   "keywords": [
@@ -30,8 +34,18 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "electron": "^39.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "electron-is-dev": "^3.0.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "vite": "^6.4.1",
+    "wait-on": "^9.0.3"
   },
   "build": {
     "appId": "com.desktop.app.collection",
@@ -41,6 +55,7 @@
     },
     "files": [
       "src/**/*",
+      "dist-renderer/**/*",
       "package.json"
     ],
     "asar": true,
@@ -96,5 +111,13 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.553.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1"
   }
 }
