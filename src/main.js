@@ -1,4 +1,4 @@
-const { app, Tray, Menu, nativeImage } = require('electron');
+const { app, Tray, Menu, nativeImage, powerMonitor } = require('electron');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 
@@ -11,6 +11,7 @@ let lastKnownData = null; // 存储完整的价格数据 { curPrice, high, low }
 let previousPrice = null;
 let blinkTimer = null;
 let blinkState = false;
+let isSuspended = false; // 跟踪系统休眠状态
 
 function createEmptyTrayIcon() {
   const transparentPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/6X0XKoAAAAASUVORK5CYII=';
@@ -208,6 +209,10 @@ async function refreshPrice() {
 }
 
 function startAutoUpdate() {
+  // 如果已经有定时器在运行，先停止
+  stopAutoUpdate();
+  
+  console.log('🔄 开始自动刷新价格...');
   updateTimer = setInterval(() => {
     refreshPrice().catch((error) => {
       console.error('定时刷新黄金价格失败:', error);
@@ -217,6 +222,7 @@ function startAutoUpdate() {
 
 function stopAutoUpdate() {
   if (updateTimer) {
+    console.log('⏸️  停止自动刷新价格');
     clearInterval(updateTimer);
     updateTimer = null;
   }
@@ -225,6 +231,46 @@ function stopAutoUpdate() {
 function createTray() {
   tray = new Tray(createEmptyTrayIcon());
   updateTrayDisplay(lastKnownData);
+}
+
+// 设置电源监控
+function setupPowerMonitor() {
+  // 监听系统休眠事件
+  powerMonitor.on('suspend', () => {
+    console.log('💤 系统进入休眠，暂停价格刷新');
+    isSuspended = true;
+    stopAutoUpdate();
+    stopBlinking();
+  });
+
+  // 监听系统恢复事件
+  powerMonitor.on('resume', async () => {
+    console.log('⏰ 系统恢复工作，重新开始价格刷新');
+    isSuspended = false;
+    
+    // 立即刷新一次价格
+    await refreshPrice();
+    
+    // 重新启动定时刷新
+    startAutoUpdate();
+  });
+
+  // 可选：监听屏幕锁定事件（可根据需要启用）
+  powerMonitor.on('lock-screen', () => {
+    console.log('🔒 屏幕已锁定');
+    // 如果需要在锁屏时也暂停刷新，可以取消下面的注释
+    // stopAutoUpdate();
+  });
+
+  powerMonitor.on('unlock-screen', () => {
+    console.log('🔓 屏幕已解锁');
+    // 如果需要在解锁时恢复刷新，可以取消下面的注释
+    // if (!isSuspended && !updateTimer) {
+    //   startAutoUpdate();
+    // }
+  });
+
+  console.log('✅ 电源监控已启用');
 }
 
 function setupApp() {
@@ -245,6 +291,9 @@ function setupApp() {
   });
 
   app.whenReady().then(async () => {
+    // 设置电源监控
+    setupPowerMonitor();
+    
     createTray();
     await refreshPrice();
     startAutoUpdate();
@@ -265,4 +314,3 @@ function setupApp() {
 }
 
 setupApp();
-
