@@ -1,25 +1,26 @@
-# electron-gold
+# 桌面应用合集
 
-macOS 托盘黄金实时价格查看工具，基于 Electron 构建。
+一个基于 Electron 构建的桌面应用工具集，集成多个实用的桌面小工具。
 
-## 功能概述
+## ✨ 功能特性
 
-- 应用启动后隐藏主窗口，仅常驻托盘显示。
-- 托盘标题即时展示黄金现货价（美元）。
-- 鼠标悬停可查看最近一次更新时间。
-- 右键菜单可手动刷新或退出应用。
-- 每 60 秒自动刷新一次价格。
+### 已集成应用
 
-## 快速开始
+#### 💰 黄金价格监控
+- 系统托盘实时显示黄金现货价格（¥/克）
+- 价格涨跌闪烁提示（红涨绿跌）
+- 自动刷新（60秒间隔）
+- 休眠自动暂停，恢复自动刷新
+- 显示最高价和最低价
 
-```bash
-npm install
-npm start
-```
+### 🎯 设计理念
 
-首次启动会下载 Electron 二进制文件，请保持网络畅通。
+- **模块化架构**：每个应用独立封装，易于扩展
+- **统一管理**：通过启动器统一管理所有应用
+- **资源高效**：按需启动，降低系统资源占用
+- **用户友好**：现代化 UI，简洁易用
 
-## 打包发布
+## 📦 快速开始
 
 ### 安装依赖
 
@@ -27,66 +28,206 @@ npm start
 npm install
 ```
 
-### 打包命令
+### 开发模式
 
 ```bash
-# 打包当前平台（不生成安装包，仅用于测试）
-npm run pack
+npm start
+```
 
-# 打包所有支持的平台
+### 开发模式（带调试）
+
+```bash
+npm run dev
+```
+
+## 🏗️ 项目结构
+
+```
+desktop_app/
+├── src/
+│   ├── main.js                 # 主进程入口
+│   ├── preload.js              # 预加载脚本
+│   ├── apps/                   # 应用集合
+│   │   ├── index.js            # 应用注册中心
+│   │   └── gold-monitor/       # 黄金价格监控
+│   │       ├── index.js        # 应用主逻辑
+│   │       ├── tray.js         # 托盘管理
+│   │       ├── api.js          # API 调用
+│   │       └── config.js       # 配置文件
+│   ├── common/                 # 公共模块
+│   │   ├── logger.js           # 日志工具
+│   │   ├── constants.js        # 全局常量
+│   │   └── utils/              # 工具函数
+│   │       └── format.js       # 格式化工具
+│   ├── ui/                     # UI 界面
+│   │   └── launcher/           # 启动器界面
+│   │       ├── index.html      # 主页面
+│   │       ├── style.css       # 样式
+│   │       └── renderer.js     # 渲染进程
+│   └── assets/                 # 静态资源
+├── package.json
+└── README.md
+```
+
+## 📱 打包发布
+
+### 打包所有平台
+
+```bash
 npm run dist
+```
 
-# 仅打包 macOS（生成 .dmg 和 .zip）
+### 打包 macOS
+
+```bash
 npm run dist:mac
+```
 
-# 仅打包 Windows（生成 .exe 安装程序）
+### 打包 Windows
+
+```bash
 npm run dist:win
+```
 
-# 仅打包 Linux（生成 AppImage 和 .deb）
+### 打包 Linux
+
+```bash
 npm run dist:linux
 ```
 
 打包完成后，文件将输出到 `dist/` 目录。
 
-### macOS 打包说明
+## 🎨 添加新应用
 
-- **支持架构**：Intel (x64) 和 Apple Silicon (arm64)
-- **输出格式**：
-  - `.dmg` - macOS 安装镜像（推荐分发）
-  - `.zip` - 压缩包格式
-- **应用签名**：如需发布到 App Store 或进行代码签名，需要配置 Apple Developer 证书
+### 1. 创建应用模块
 
-### 图标文件（可选）
+在 `src/apps/` 目录下创建新的应用文件夹，例如 `my-app/`：
 
-为了更好的用户体验，建议添加应用图标：
+```javascript
+// src/apps/my-app/index.js
+const Logger = require('../../common/logger');
 
-1. 创建 `build/` 目录
-2. 放置图标文件：
-   - macOS: `build/icon.icns` (512x512 或更高)
-   - Windows: `build/icon.ico` (256x256 或更高)
-   - Linux: `build/icon.png` (512x512 或更高)
+class MyApp {
+  constructor() {
+    this.logger = new Logger('MyApp');
+    this.isRunning = false;
+  }
 
-如果没有图标文件，electron-builder 会使用默认图标。
+  async start() {
+    this.logger.info('启动应用...');
+    // 应用启动逻辑
+    this.isRunning = true;
+  }
 
-## 技术要点
+  stop() {
+    this.logger.info('停止应用...');
+    // 应用停止逻辑
+    this.isRunning = false;
+  }
 
-- Electron 39（包含 Node.js 20+，原生支持 `fetch`）。
-- 从 `https://api.metals.live/v1/spot` 获取黄金现货价，若接口不可用则保留上次成功值。
-- 托盘图标使用透明像素，仅显示文本标题，适配浅色/深色模式。
+  getStatus() {
+    return this.isRunning;
+  }
+}
 
-## 目录结构
-
-```
-electron-gold/
-├── package.json
-├── README.md
-├── src/
-│   └── main.js
-├── .gitignore
-└── node_modules/
+module.exports = MyApp;
 ```
 
-## 常见问题
+### 2. 注册应用
 
-- 若自动刷新失效，请检查网络连接是否可访问 `api.metals.live`。
-- 若想修改刷新频率或数据来源，可在 `src/main.js` 中调整常量 `UPDATE_INTERVAL` 和 `GOLD_API_URL`。
+在 `src/apps/index.js` 中注册新应用：
+
+```javascript
+const MyApp = require('./my-app');
+
+const apps = [
+  // ... 其他应用
+  {
+    id: 'my-app',
+    name: '我的应用',
+    description: '应用描述',
+    icon: '🎉',
+    type: 'tray', // 或 'window'
+    category: 'utility',
+    instance: null,
+    AppClass: MyApp,
+  },
+];
+```
+
+### 3. 重启应用
+
+```bash
+npm start
+```
+
+## 🛠️ 技术栈
+
+- **Electron 39**：跨平台桌面应用框架
+- **Node.js 20+**：原生支持 `fetch` API
+- **原生 JavaScript**：无需额外前端框架
+- **CSS3**：现代化样式设计
+
+## 📝 开发规范
+
+### 代码风格
+
+- 使用 ES6+ 语法
+- 模块化设计，单一职责
+- 统一使用 Logger 记录日志
+- 完善的错误处理
+
+### 应用接口规范
+
+每个应用类必须实现以下方法：
+
+- `start()`: 启动应用
+- `stop()`: 停止应用
+- `getStatus()`: 获取运行状态（返回 boolean）
+
+### 应用类型
+
+- **tray**: 托盘应用（如黄金价格监控）
+- **window**: 窗口应用（待扩展）
+
+## 🔧 配置说明
+
+### 黄金价格监控配置
+
+编辑 `src/apps/gold-monitor/config.js`：
+
+```javascript
+module.exports = {
+  API_URL: 'https://m.cmbchina.com/api/rate/gold?no=AU9999',
+  UPDATE_INTERVAL: 60 * 1000, // 更新间隔（毫秒）
+  BLINK_DURATION: 500,         // 闪烁持续时间
+  BLINK_COUNT: 6,              // 闪烁次数
+  TITLE_PREFIX: 'Au',          // 托盘标题前缀
+  DECIMAL_PLACES: 2,           // 小数位数
+};
+```
+
+## 🚀 未来计划
+
+- [ ] 添加更多实用工具应用
+- [ ] 支持应用配置界面
+- [ ] 添加自动更新功能
+- [ ] 支持主题切换
+- [ ] 添加应用商店（可安装第三方应用）
+- [ ] 优化资源占用
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
+
+ISC License
+
+## 👤 作者
+
+Bobby (zhangluuka@gmail.com)
+
+---
+
+**享受你的桌面应用合集！** 🎉

@@ -1,10 +1,11 @@
 {
-  "name": "electron-gold",
-  "version": "0.0.2",
-  "description": "macOS托盘黄金价格实时查看工具",
+  "name": "desktop-app-collection",
+  "version": "1.0.0",
+  "description": "桌面应用合集 - 集成多个实用工具的桌面应用",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:mac": "electron-builder --mac",
@@ -18,8 +19,9 @@
   },
   "keywords": [
     "electron",
-    "tray",
-    "gold",
+    "desktop",
+    "tools",
+    "collection",
     "macos"
   ],
   "author": {
@@ -32,8 +34,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.electron.gold",
-    "productName": "黄金价格监控",
+    "appId": "com.desktop.app.collection",
+    "productName": "桌面应用合集",
     "directories": {
       "output": "dist"
     },
@@ -47,7 +49,7 @@
     ],
     "compression": "maximum",
     "mac": {
-      "category": "public.app-category.finance",
+      "category": "public.app-category.utilities",
       "target": [
         {
           "target": "dmg",
@@ -72,7 +74,7 @@
         "AppImage",
         "deb"
       ],
-      "category": "Finance",
+      "category": "Utility",
       "icon": "build/icon.png"
     },
     "publish": [],
