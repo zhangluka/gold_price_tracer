@@ -2,7 +2,7 @@ name: Build Matrix
 
 on:
   push:
-    branches: [main, master]
+    branches: []
   workflow_dispatch: # Allow manual trigger
 
 jobs:
