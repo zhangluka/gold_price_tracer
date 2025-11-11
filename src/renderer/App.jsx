@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { AppCard } from './components/AppCard';
+import React, { useState, useEffect } from "react";
+import { AppCard } from "./components/AppCard";
+import ClipboardHistoryPanel from "./components/ClipboardHistoryPanel";
 
 function App() {
   const [apps, setApps] = useState([]);
@@ -16,7 +17,7 @@ function App() {
       const appsList = await window.electronAPI.getApps();
       setApps(appsList);
     } catch (error) {
-      console.error('加载应用列表失败:', error);
+      console.error("加载应用列表失败:", error);
     }
   };
 
@@ -55,7 +56,9 @@ function App() {
         <main>
           {apps.length === 0 ? (
             <div className="text-center py-20">
-              <h2 className="text-2xl font-semibold text-white mb-3">暂无应用</h2>
+              <h2 className="text-2xl font-semibold text-white mb-3">
+                暂无应用
+              </h2>
               <p className="text-white/80">敬请期待更多应用...</p>
             </div>
           ) : (
@@ -77,6 +80,9 @@ function App() {
           <p>© 2025 桌面应用合集 v1.0.0</p>
         </footer>
       </div>
+
+      {/* 剪贴板历史面板 */}
+      <ClipboardHistoryPanel />
     </div>
   );
 }

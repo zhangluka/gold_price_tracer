@@ -6,7 +6,7 @@ const path = require('path');
 const isDev = require('electron-is-dev');
 const Logger = require('./common/logger');
 const { LAUNCHER_WINDOW } = require('./common/constants');
-const { getAllApps, startApp, stopApp, stopAllApps } = require('./apps');
+const { getAllApps, startApp, stopApp, stopAllApps, getAppById, initApp } = require('./apps');
 
 const logger = new Logger('Main');
 
@@ -83,13 +83,42 @@ function setupIpcHandlers() {
     }
   });
 
+  // 获取剪贴板历史数据
+  ipcMain.handle('get-clipboard-history', async (event) => {
+    const app = getAppById('clipboard-history');
+    if (app && app.instance) {
+      return app.instance.clipboardHistory || [];
+    }
+    return [];
+  });
+
+  // 设置面板位置
+  ipcMain.handle('set-panel-position', async (event, x, y) => {
+    const app = getAppById('clipboard-history');
+    if (app && app.instance) {
+      app.instance.setPanelPosition(x, y);
+      return { success: true };
+    }
+    return { success: false };
+  });
+
+  // 复制文本到剪贴板
+  ipcMain.handle('copy-to-clipboard', async (event, text) => {
+    const app = getAppById('clipboard-history');
+    if (app && app.instance) {
+      app.instance.copyToClipboard(text);
+      return { success: true };
+    }
+    return { success: false };
+  });
+
   logger.success('IPC 处理器已设置');
 }
 
 /**
- * 初始化应用
+ * 初始化主应用
  */
-function initApp() {
+function initMainApp() {
   // 确保单例
   const gotLock = app.requestSingleInstanceLock();
   if (!gotLock) {
@@ -108,9 +137,18 @@ function initApp() {
   });
 
   // 应用就绪时
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     setupIpcHandlers();
     createLauncherWindow();
+
+    // 自动启动剪贴板历史应用
+    try {
+      await initApp();
+      logger.success('剪贴板历史应用已自动启动');
+    } catch (error) {
+      logger.error('启动剪贴板历史应用失败:', error);
+    }
+
     logger.success('应用已启动');
   });
 
@@ -141,4 +179,4 @@ function initApp() {
 }
 
 // 启动应用
-initApp();
+initMainApp();

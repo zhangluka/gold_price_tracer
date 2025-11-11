@@ -2,6 +2,7 @@
  * 应用注册中心
  */
 const GoldMonitorApp = require('./gold-monitor');
+const ClipboardHistoryApp = require('./clipboard-history');
 
 // 应用注册表
 const apps = [
@@ -14,6 +15,16 @@ const apps = [
     category: 'finance',
     instance: null,
     AppClass: GoldMonitorApp,
+  },
+  {
+    id: 'clipboard-history',
+    name: '剪贴板历史',
+    description: '通过Command+V快捷键查看剪贴板历史记录',
+    icon: '📋',
+    type: 'panel',
+    category: 'productivity',
+    instance: null,
+    AppClass: ClipboardHistoryApp,
   },
   // 未来可以添加更多应用
   // {
@@ -100,10 +111,24 @@ function stopAllApps() {
   });
 }
 
+/**
+ * 初始化应用 - 自动启动剪贴板历史应用
+ */
+async function initApp() {
+  try {
+    // 自动启动剪贴板历史应用，这样快捷键就能正常工作
+    await startApp('clipboard-history');
+    console.log('剪贴板历史应用已自动启动');
+  } catch (error) {
+    console.error('启动剪贴板历史应用失败:', error);
+  }
+}
+
 module.exports = {
   getAllApps,
   getAppById,
   startApp,
   stopApp,
   stopAllApps,
+  initApp, // 导出初始化函数
 };
